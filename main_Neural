@@ -1,0 +1,38 @@
+from google.colab import files
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense
+import io
+
+# Upload the dataset
+uploaded = files.upload()
+
+print(uploaded.keys())
+
+# Load the dataset using the correct file name
+file_name = list(uploaded.keys())[0]  # Automatically pick the first uploaded file
+data_new = pd.read_csv(io.BytesIO(uploaded[file_name]))
+
+# Preprocessing: Separate features and target
+X = data_new.drop('prognosis', axis=1)  # Features
+y = data_new['prognosis']               # Target
+
+# Encode the target labels (prognosis) as integers
+label_encoder = LabelEncoder()
+y_encoded = label_encoder.fit_transform(y)
+
+X_train, X_test, y_train, y_test = train_test_split(X, y_encoded, test_size=0.2, random_state=42)
+
+model = Sequential()
+model.add(Dense(64, input_dim=X_train.shape[1], activation='relu'))  # First hidden layer
+model.add(Dense(32, activation='relu'))                             # Second hidden layer
+model.add(Dense(len(label_encoder.classes_), activation='softmax')) # Output layer
+
+model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+
+model.fit(X_train, y_train, epochs=50, batch_size=32, validation_data=(X_test, y_test))
+
+loss, accuracy = model.evaluate(X_test, y_test)
+print(f'Test Accuracy: {accuracy * 100:.2f}%')
