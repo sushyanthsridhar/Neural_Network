@@ -1,0 +1,24 @@
+import pandas as pd
+import numpy as np
+from google.colab import files
+
+# Upload your CSV file
+uploaded = files.upload()
+
+# Load the CSV file (assuming the file is named 'dengue.csv')
+df = pd.read_csv(list(uploaded.keys())[0])
+
+# Calculate the covariance of each attribute with the target (Dengue)
+cov_matrix = np.cov(df[['Fever', 'Headache', 'JointPain', 'Bleeding']].T, df['Dengue'])
+
+# Extract the covariance values between each attribute and the target (Dengue)
+cov_values = cov_matrix[:-1, -1]
+
+# Create a DataFrame for better readability
+cov_df = pd.DataFrame({
+    'Attribute': ['Fever', 'Headache', 'JointPain', 'Bleeding'],
+    'Covariance with Dengue': cov_values
+})
+
+# Display the covariance results
+print(cov_df)
